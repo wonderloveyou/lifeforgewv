@@ -55,5 +55,16 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.31.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@lifeforge/lifeforge--todo-list": "workspace:*",
+    "@lifeforge/lifeforge--idea-box": "workspace:*",
+    "@lifeforge/lifeforge--wallet": "workspace:*",
+    "@lifeforge/lifeforge--achievements": "workspace:*",
+    "@lifeforge/lifeforge--api-endpoint-explorer": "workspace:*",
+    "@lifeforge/lifeforge--blog": "workspace:*",
+    "@lifeforge/jiahuiiiii--stock": "workspace:*",
+    "@lifeforge/melvinchia3636--invoice-maker": "workspace:*",
+    "@lifeforge/melvinchia3636--modrinth": "workspace:*",
+    "@lifeforge/lifeforge--calendar": "workspace:*"
+  }
 }

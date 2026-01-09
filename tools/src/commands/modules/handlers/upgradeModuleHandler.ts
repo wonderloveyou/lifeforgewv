@@ -55,7 +55,7 @@ async function upgradeModule(
     fs.cpSync(targetDir, backupPath, { recursive: true })
     fs.rmSync(targetDir, { recursive: true, force: true })
 
-    installPackage(fullName, targetDir)
+    await installPackage(fullName, targetDir)
 
     fs.rmSync(backupPath, { recursive: true, force: true })
 

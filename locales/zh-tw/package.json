@@ -1,0 +1,11 @@
+{
+  "name": "@lifeforge/lang-zh-TW",
+  "version": "0.0.1",
+  "description": "LifeForge 的繁體中文語言支援。",
+  "author": "GitHub Copilot",
+  "lifeforge": {
+    "displayName": "繁體中文",
+    "icon": "circle-flags:tw",
+    "alternative": ["zh-tw", "zh", "zh-hk", "zh-HK"]
+  }
+}

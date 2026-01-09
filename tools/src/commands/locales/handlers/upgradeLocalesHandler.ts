@@ -22,7 +22,7 @@ export async function upgradeLocaleHandler(langCode?: string): Promise<void> {
     Logging.info(`Upgrading ${Logging.highlight(upgrade.name)}...`)
 
     try {
-      installPackage(
+      await installPackage(
         upgrade.name,
         normalizePackage(upgrade.name, 'locale').targetDir
       )

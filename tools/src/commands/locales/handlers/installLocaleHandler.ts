@@ -33,7 +33,7 @@ export async function installLocaleHandler(langCode: string): Promise<void> {
   Logging.info(`Installing ${Logging.highlight(fullName)}...`)
 
   try {
-    installPackage(fullName, targetDir)
+    await installPackage(fullName, targetDir)
     initGitRepository(targetDir)
 
     await setFirstLangInDB(shortName)

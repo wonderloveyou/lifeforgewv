@@ -58,7 +58,7 @@ export async function installModuleHandler(
 
     Logging.debug(`Installing ${Logging.highlight(fullName)}...`)
 
-    installPackage(fullName, targetDir)
+    await installPackage(fullName, targetDir)
     initGitRepository(targetDir)
 
     installed.push(moduleName)
