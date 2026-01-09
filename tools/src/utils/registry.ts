@@ -39,12 +39,11 @@ export async function checkPackageExists(
   const registry = getRegistryUrl()
 
   try {
-    executeCommand(`npm view ${packageName} --registry ${registry}`, {
-      cwd: ROOT_DIR,
-      stdio: 'pipe'
+    const response = await fetch(`${registry.endsWith('/') ? registry : registry + '/'}${packageName}`, {
+      method: 'HEAD'
     })
 
-    return true
+    return response.ok
   } catch {
     return false
   }

@@ -52,12 +52,13 @@ i18n
     },
     backend: {
       loadPath: (langs: string[], namespaces: string[]) => {
-        if (
-          !AVAILABLE_LANG.map(e => e.name)
-            .flat()
-            .includes(langs[0]) ||
-          !namespaces.filter(e => e && e !== 'undefined').length
-        ) {
+        const lang = AVAILABLE_LANG.find(
+          e =>
+            e.name.toLowerCase() === langs[0].toLowerCase() ||
+            e.alternative?.some(alt => alt.toLowerCase() === langs[0].toLowerCase())
+        )
+
+        if (!lang || !namespaces.filter(e => e && e !== 'undefined').length) {
           return
         }
 
@@ -68,7 +69,7 @@ i18n
         }
 
         return forgeAPI.locales.getLocale.input({
-          lang: langs[0],
+          lang: lang.name,
           namespace: namespace as 'apps' | 'common',
           subnamespace: subnamespace
         }).endpoint

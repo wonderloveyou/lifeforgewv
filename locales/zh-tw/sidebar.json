@@ -13,7 +13,13 @@
     "references": "參考資料",
     "lifestyle": "生活方式",
     "externalManagement": "外部管理",
-    "healthFitness": "健康與健身"
+    "healthFitness": "健康與健身",
+    "social": "社交",
+    "development": "開發",
+    "games": "遊戲",
+    "business": "商務",
+    "entertainment": "娛樂",
+    "tools": "工具"
   },
   "buttons": {
     "signOut": "登出",

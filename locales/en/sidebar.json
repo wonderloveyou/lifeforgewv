@@ -13,7 +13,13 @@
     "references": "References",
     "lifestyle": "Lifestyle",
     "externalManagement": "External Management",
-    "healthFitness": "Health & Fitness"
+    "healthFitness": "Health & Fitness",
+    "social": "Social",
+    "development": "Development",
+    "games": "Games",
+    "business": "Business",
+    "entertainment": "Entertainment",
+    "tools": "Tools"
   },
   "buttons": {
     "signOut": "Sign Out",

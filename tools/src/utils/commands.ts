@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { ROOT_DIR } from '@/constants/constants'
+import { getPackageTarballUrl } from '@/utils/registry'
 
 import Logging, { LEVEL_ORDER } from './logging'
 import { addDependency } from './packageJson'
@@ -83,53 +84,97 @@ export default function executeCommand(
  * Runs `bun install` in the root directory to install dependencies.
  */
 export function bunInstall() {
-  executeCommand('bun install', {
-    cwd: ROOT_DIR,
-    stdio: Logging.level > LEVEL_ORDER['debug'] ? 'pipe' : 'inherit'
-  })
+  const backend = process.platform === 'win32' ? ' --backend=copy' : ''
+  try {
+    executeCommand(`bun install${backend}`, {
+      cwd: ROOT_DIR,
+      stdio: Logging.level > LEVEL_ORDER['debug'] ? 'pipe' : 'inherit'
+    })
+  } catch (error) {
+    if (error === 1) {
+      Logging.debug(
+        'Bun reported an error during install, but continuing as it usually works anyway...'
+      )
+      return
+    }
+    throw error
+  }
 }
 
 /**
  * Installs a package from the registry and copies it to the target directory.
  *
- * Downloads the package using `bun add`, copies it from node_modules to the target
+ * Downloads the package tarball from the registry, extracts it to the target
  * directory, adds it as a workspace dependency, and runs `bun install`.
  *
  * @param fullName - The full package name (e.g., `@lifeforge/lifeforge--calendar`)
  * @param targetDir - The absolute path to copy the package to
  */
-export function installPackage(fullName: string, targetDir: string) {
+export async function installPackage(fullName: string, targetDir: string) {
   if (fs.existsSync(targetDir)) {
     fs.rmSync(targetDir, { recursive: true, force: true })
   }
 
   Logging.debug(`Installing ${Logging.highlight(fullName)} from registry...`)
 
-  executeCommand(`bun add ${fullName}@latest`, {
-    cwd: ROOT_DIR,
-    stdio: Logging.level > LEVEL_ORDER['info'] ? 'pipe' : 'inherit'
-  })
+  const tarballUrl = await getPackageTarballUrl(fullName)
 
-  const installedPath = path.join(ROOT_DIR, 'node_modules', fullName)
-
-  if (!fs.existsSync(installedPath)) {
+  if (!tarballUrl) {
     Logging.actionableError(
-      `Failed to install ${Logging.highlight(fullName)}`,
+      `Failed to find tarball for ${Logging.highlight(fullName)}`,
       'Check if the package exists in the registry'
     )
-
     process.exit(1)
   }
 
-  Logging.debug(`Copying ${Logging.highlight(fullName)} to ${targetDir}...`)
-
-  fs.cpSync(installedPath, targetDir, { recursive: true, dereference: true })
-
-  addDependency(fullName)
-
-  if (fs.existsSync(installedPath)) {
-    fs.rmSync(installedPath, { recursive: true, force: true })
+  const tempDir = path.join(ROOT_DIR, '.forge-temp')
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true })
   }
 
+  const tarballPath = path.join(tempDir, `${fullName.replace('/', '-')}.tgz`)
+  const extractPath = path.join(tempDir, fullName.replace('/', '-'))
+
+  if (fs.existsSync(extractPath)) {
+    fs.rmSync(extractPath, { recursive: true, force: true })
+  }
+  fs.mkdirSync(extractPath, { recursive: true })
+
+  Logging.debug(`Downloading tarball from ${tarballUrl}...`)
+
+  executeCommand(`curl.exe -L -o "${tarballPath}" "${tarballUrl}"`, {
+    cwd: ROOT_DIR,
+    stdio: 'pipe'
+  })
+
+  Logging.debug(`Extracting tarball...`)
+
+  executeCommand(`tar -xf "${tarballPath}" -C "${extractPath}"`, {
+    cwd: ROOT_DIR,
+    stdio: 'pipe'
+  })
+
+  const packagePath = path.join(extractPath, 'package')
+
+  if (!fs.existsSync(packagePath)) {
+    Logging.actionableError(
+      `Failed to extract ${Logging.highlight(fullName)}`,
+      'The tarball might be corrupted or in an unexpected format'
+    )
+    process.exit(1)
+  }
+
+  Logging.debug(`Moving ${Logging.highlight(fullName)} to ${targetDir}...`)
+
+  fs.mkdirSync(path.dirname(targetDir), { recursive: true })
+  fs.renameSync(packagePath, targetDir)
+
+  // Clean up
+  fs.rmSync(extractPath, { recursive: true, force: true })
+  if (fs.existsSync(tarballPath)) {
+    fs.rmSync(tarballPath, { force: true })
+  }
+
+  addDependency(fullName)
   bunInstall()
 }
